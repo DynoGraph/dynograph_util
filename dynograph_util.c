@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <getopt.h>
 
 void
 dynograph_message(const char* fmt, ...)
@@ -25,6 +26,142 @@ dynograph_error(const char* fmt, ...)
     fprintf(stderr, "\n");
     va_end(args);
     exit(1);
+}
+
+static const struct option long_options[] = {
+    {"num-epochs" , required_argument, 0, 0},
+    {"input-path" , required_argument, 0, 0},
+    {"batch-size" , required_argument, 0, 0},
+    {"alg-names"  , required_argument, 0, 0},
+    {"sort-mode"  , required_argument, 0, 0},
+    {"window-size", required_argument, 0, 0},
+    {"num-trials" , required_argument, 0, 0},
+    {"help"       , no_argument, 0, 0},
+    {NULL         , 0, 0, 0}
+};
+
+static const struct option_desc
+{
+    const char* name;
+    const char* desc;
+} option_descriptions[] = {
+    {"num-epochs" , "Number of epochs (algorithm updates) in the benchmark"},
+    {"input-path" , "File path to the graph edge list to load (.graph.el or .graph.bin)"},
+    {"batch-size" , "Number of edges in each batch of insertions"},
+    {"alg-names"  , "Algorithms to run in each epoch"},
+    {"sort-mode"  , "Controls batch pre-processing: \n"
+                    "\t\tunsorted (no preprocessing, default),\n"
+                    "\t\tpresort (sort and deduplicate before insert), or\n "
+                    "\t\tsnapshot (clear out graph and reconstruct for each batch)"},
+    {"window-size", "Percentage of the graph to hold in memory (computed using timestamps) "},
+    {"num-trials" , "Number of times to repeat the benchmark"},
+    {"help"       , "Print help"},
+    {NULL         , NULL}
+};
+
+static void
+print_help(const char* argv0)
+{
+    fprintf(stderr, "Usage: %s [OPTIONS]\n", argv0);
+    for (const struct option_desc *o = option_descriptions; o->name != NULL; ++o)
+    {
+        fprintf(stderr, "\t--%s\t%s\n", o->name, o->desc);
+    }
+}
+
+bool
+validate(const struct dynograph_args *args)
+{
+    if (args->num_epochs < 1) {
+        fprintf(stderr, "\t--num-epochs must be positive\n");
+        return false;
+    }
+    if (strlen(args->input_path) == 0) {
+        fprintf(stderr, "\t--input-path cannot be empty\n");
+        return false;
+    }
+    if (args->batch_size < 1) {
+        fprintf(stderr, "\t--batch-size must be positive\n");
+        return false;
+    }
+    if (args->window_size < 0 || args->window_size > 1) {
+        fprintf(stderr, "\t--window-size must be in the range [0.0, 1.0]\n");
+        return false;
+    }
+    if (args->num_trials < 1) {
+        fprintf(stderr, "\t--num-trials must be positive\n");
+        return false;
+    }
+    return true;
+}
+
+void
+dynograph_args_parse(int argc, char *argv[], struct dynograph_args *args)
+{
+    args->sort_mode = UNSORTED;
+    args->window_size = 1.0;
+    args->num_trials = 1;
+
+    int option_index;
+    while (1)
+    {
+        int c = getopt_long(argc, argv, "", long_options, &option_index);
+
+        // Done parsing
+        if (c == -1) { break; }
+        // Parse error
+        if (c == '?') {
+            fprintf(stderr, "Invalid arguments\n");
+            print_help(argv[0]);
+            dynograph_die();
+        }
+        const char *option_name = long_options[option_index].name;
+
+        if (!strcmp(option_name, "num-epochs")) {
+            args->num_epochs = atoll(optarg);
+
+        } else if (!strcmp(option_name, "alg-names")) {
+            const char* alg_str = optarg;
+            // FIXME split string, populate list, and store list length
+            args->alg_names = "";
+
+        } else if (!strcmp(option_name, "input-path")) {
+            args->input_path = optarg;
+
+        } else if (!strcmp(option_name, "batch-size")) {
+            args->batch_size = atoll(optarg);
+
+        } else if (!strcmp(option_name, "sort-mode")) {
+            const char* sort_mode_str = optarg;
+            // FIXME implement sort modes
+            args->sort_mode = UNSORTED;
+            // if      (sort_mode_str == "unsorted") { args->sort_mode = Args::SORT_MODE::UNSORTED; }
+            // else if (sort_mode_str == "presort")  { args->sort_mode = Args::SORT_MODE::PRESORT;  }
+            // else if (sort_mode_str == "snapshot") { args->sort_mode = Args::SORT_MODE::SNAPSHOT; }
+            // else {
+            //     logger << "sort-mode must be one of ['unsorted', 'presort', 'snapshot']\n";
+            //     dynograph_die();
+            // }
+
+        } else if (!strcmp(option_name, "window-size")) {
+            args->window_size = atof(optarg);
+
+        } else if (!strcmp(option_name, "num-trials")) {
+            args->num_trials = atoll(optarg);
+
+        } else if (!strcmp(option_name, "help")) {
+            print_help(argv[0]);
+            dynograph_die();
+        }
+    }
+
+    bool args_are_valid = validate(args);
+    if (!args_are_valid)
+    {
+        fprintf(stderr, "Terminating due to invalid arguments\n");
+        print_help(argv[0]);
+        dynograph_die();
+    }
 }
 
 struct dynograph_dataset*
@@ -178,4 +315,10 @@ void
 dynograph_free_dataset(struct dynograph_dataset * dataset)
 {
     free(dataset);
+}
+
+void
+dynograph_die()
+{
+    exit(-1);
 }

@@ -3,6 +3,32 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <sys/stat.h>
+#include <stdbool.h>
+
+struct dynograph_args
+{
+    // Number of epochs in the benchmark
+    int64_t num_epochs;
+    // File path for edge list to load
+    const char* input_path;
+    // Number of edges to insert in each batch of insertions
+    int64_t batch_size;
+    // Algorithms to run after each epoch
+    const char** alg_names;
+    // Batch sort mode:
+    enum SORT_MODE {
+        // Do not pre-sort batches
+        UNSORTED,
+        // Sort and deduplicate each batch before returning it
+        PRESORT,
+        // Each batch is a cumulative snapshot of all edges in previous batches
+        SNAPSHOT
+    } sort_mode;
+    // Percentage of the graph to hold in memory
+    double window_size;
+    // Number of times to repeat the benchmark
+    int64_t num_trials;
+};
 
 struct dynograph_edge {
     int64_t src;
@@ -26,6 +52,10 @@ struct dynograph_edge_batch {
 
 void dynograph_message(const char* fmt, ...);
 void dynograph_error(const char* fmt, ...);
+void dynograph_die();
+
+void dynograph_args_parse(int argc, char *argv[], struct dynograph_args *args);
+
 
 struct dynograph_dataset * dynograph_load_dataset(const char* path, int64_t num_batches);
 struct dynograph_edge_batch dynograph_get_batch(const struct dynograph_dataset * dataset, int64_t batch_id);
