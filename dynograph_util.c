@@ -62,10 +62,10 @@ static const struct option_desc
 static void
 print_help(const char* argv0)
 {
-    fprintf(stderr, "Usage: %s [OPTIONS]\n", argv0);
+    dynograph_message("Usage: %s [OPTIONS]", argv0);
     for (const struct option_desc *o = option_descriptions; o->name != NULL; ++o)
     {
-        fprintf(stderr, "\t--%s\t%s\n", o->name, o->desc);
+        dynograph_message("\t--%s\t%s", o->name, o->desc);
     }
 }
 
@@ -73,23 +73,23 @@ bool
 validate(const struct dynograph_args *args)
 {
     if (args->num_epochs < 1) {
-        fprintf(stderr, "\t--num-epochs must be positive\n");
+        dynograph_message("\t--num-epochs must be positive");
         return false;
     }
     if (strlen(args->input_path) == 0) {
-        fprintf(stderr, "\t--input-path cannot be empty\n");
+        dynograph_message("\t--input-path cannot be empty");
         return false;
     }
     if (args->batch_size < 1) {
-        fprintf(stderr, "\t--batch-size must be positive\n");
+        dynograph_message("\t--batch-size must be positive");
         return false;
     }
     if (args->window_size < 0 || args->window_size > 1) {
-        fprintf(stderr, "\t--window-size must be in the range [0.0, 1.0]\n");
+        dynograph_message("\t--window-size must be in the range [0.0, 1.0]");
         return false;
     }
     if (args->num_trials < 1) {
-        fprintf(stderr, "\t--num-trials must be positive\n");
+        dynograph_message("\t--num-trials must be positive");
         return false;
     }
     return true;
@@ -105,13 +105,14 @@ dynograph_args_parse(int argc, char *argv[], struct dynograph_args *args)
     int option_index;
     while (1)
     {
-        int c = getopt_long(argc, argv, "", long_options, &option_index);
+        int c = '?'; // FIXME getopt won't link
+        //int c = getopt_long(argc, argv, "", long_options, &option_index);
 
         // Done parsing
         if (c == -1) { break; }
         // Parse error
         if (c == '?') {
-            fprintf(stderr, "Invalid arguments\n");
+            dynograph_message("Invalid arguments");
             print_help(argv[0]);
             dynograph_die();
         }
@@ -121,9 +122,8 @@ dynograph_args_parse(int argc, char *argv[], struct dynograph_args *args)
             args->num_epochs = atoll(optarg);
 
         } else if (!strcmp(option_name, "alg-names")) {
-            const char* alg_str = optarg;
             // FIXME split string, populate list, and store list length
-            args->alg_names = "";
+            args->alg_names[0] = optarg;
 
         } else if (!strcmp(option_name, "input-path")) {
             args->input_path = optarg;
@@ -158,7 +158,7 @@ dynograph_args_parse(int argc, char *argv[], struct dynograph_args *args)
     bool args_are_valid = validate(args);
     if (!args_are_valid)
     {
-        fprintf(stderr, "Terminating due to invalid arguments\n");
+        dynograph_message("Terminating due to invalid arguments");
         print_help(argv[0]);
         dynograph_die();
     }
@@ -274,21 +274,15 @@ dynograph_load_dataset(const char* path, int64_t num_batches)
     } else {
         return dynograph_load_edges_ascii(path, num_batches);
     }
+    // FIXME calc max vertex id in file
+
 }
 
 int64_t
-dynograph_get_timestamp_for_window(const struct dynograph_dataset *dataset, int64_t batch_id, int64_t window_size)
+dynograph_get_timestamp_for_window(const struct dynograph_dataset *dataset, int64_t batch_id)
 {
-    int64_t modified_after = INT64_MIN;
-    if (batch_id > window_size)
-    {
-        // Intentionally rounding down here
-        // TODO variable number of edges per batch
-        int64_t edges_per_batch = dataset->num_edges / dataset->num_batches;
-        int64_t startEdge = (batch_id - window_size) * edges_per_batch;
-        modified_after = dataset->edges[startEdge].timestamp;
-    }
-    return modified_after;
+    // FIXME
+    return 0;
 }
 
 struct dynograph_edge_batch

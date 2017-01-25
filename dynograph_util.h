@@ -41,6 +41,8 @@ struct dynograph_dataset {
     int64_t num_batches;
     int64_t num_edges;
     int64_t directed;
+    int64_t max_vertex_id;
+    const struct dynograph_args *args;
     struct dynograph_edge edges[0];
 };
 
@@ -60,6 +62,6 @@ void dynograph_args_parse(int argc, char *argv[], struct dynograph_args *args);
 struct dynograph_dataset * dynograph_load_dataset(const char* path, int64_t num_batches);
 struct dynograph_edge_batch dynograph_get_batch(const struct dynograph_dataset * dataset, int64_t batch_id);
 void dynograph_free_dataset(struct dynograph_dataset * dataset);
-int64_t dynograph_get_timestamp_for_window(const struct dynograph_dataset * dataset, int64_t batch_id, int64_t window_size);
+int64_t dynograph_get_timestamp_for_window(const struct dynograph_dataset * dataset, int64_t batch_id);
 
 #endif /* __DYNOGRAPH_H_ */
