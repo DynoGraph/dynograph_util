@@ -15,9 +15,14 @@ struct option {
     int        *flag;
     int         val;
 };
-
 #else
 #include <getopt.h>
+#endif
+
+// stat fails with "unknown syscall"
+#define STAT_IS_BROKEN
+#ifndef STAT_IS_BROKEN
+#include <sys/stat.h>
 #endif
 
 void
@@ -200,18 +205,37 @@ dynograph_args_parse(int argc, char *argv[], struct dynograph_args *args)
 #endif
 }
 
+static int64_t
+count_edges(const char* path)
+{
+    #ifdef STAT_IS_BROKEN
+        FILE* fp = fopen(path, "rb");
+        fseek(fp, 0L, SEEK_END);
+        size_t size = ftell(fp);
+        int64_t num_edges = size / sizeof(struct dynograph_edge);
+    #else
+        struct stat st;
+        if (stat(path, &st) != 0)
+        {
+            dynograph_error("Failed to stat %s", path);
+        }
+        int64_t num_edges = st.st_size / sizeof(struct dynograph_edge);
+    #endif
+
+    return num_edges;
+}
+
 struct dynograph_dataset*
 dynograph_load_edges_binary(const char* path, int64_t num_batches)
 {
     dynograph_message("Checking file size of %s...", path);
     FILE* fp = fopen(path, "rb");
-    struct stat st;
-    if (stat(path, &st) != 0)
-    {
-        dynograph_error("Failed to stat %s", path);
+    if (fp == NULL) {
+        dynograph_message("Unable to open %s", path);
+        dynograph_die();
     }
-    int64_t num_edges = st.st_size / sizeof(struct dynograph_edge);
 
+    int64_t num_edges = count_edges(path);
     struct dynograph_dataset *dataset = malloc(
         sizeof(struct dynograph_dataset) +
         sizeof(struct dynograph_edge) * num_edges

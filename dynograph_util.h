@@ -2,8 +2,6 @@
 #define DYNOGRAPH_H_
 #include <stdint.h>
 #include <stdbool.h>
-#include <sys/stat.h>
-#include <stdbool.h>
 
 struct dynograph_args
 {
