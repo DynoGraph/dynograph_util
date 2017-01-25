@@ -3,7 +3,22 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+
+// Known bug in emu toolchain - can't use getopt/getopt_long
+#define GETOPT_IS_BROKEN
+#ifdef GETOPT_IS_BROKEN
+const int required_argument = 0;
+const int no_argument = 1;
+struct option {
+    const char *name;
+    int         has_arg;
+    int        *flag;
+    int         val;
+};
+
+#else
 #include <getopt.h>
+#endif
 
 void
 dynograph_message(const char* fmt, ...)
@@ -102,11 +117,27 @@ dynograph_args_parse(int argc, char *argv[], struct dynograph_args *args)
     args->window_size = 1.0;
     args->num_trials = 1;
 
+#ifdef GETOPT_IS_BROKEN
+    if (argc != 2) {
+        print_help(argv[0]);
+        dynograph_die();
+    }
+
+    FILE* arg_file = fopen(argv[1], "r");
+    if (arg_file == NULL)
+    {
+        dynograph_error("Unable to load arg file %s", argv[1]);
+    }
+    char option_name[128];
+    char optarg[256];
+    while (fscanf(arg_file, "%s %s", &option_name, &optarg) == 2)
+    {
+
+#else
     int option_index;
     while (1)
     {
-        int c = '?'; // FIXME getopt won't link
-        //int c = getopt_long(argc, argv, "", long_options, &option_index);
+        int c = getopt_long(argc, argv, "", long_options, &option_index);
 
         // Done parsing
         if (c == -1) { break; }
@@ -116,17 +147,18 @@ dynograph_args_parse(int argc, char *argv[], struct dynograph_args *args)
             print_help(argv[0]);
             dynograph_die();
         }
-        const char *option_name = long_options[option_index].name;
 
+        const char *option_name = long_options[option_index].name;
+#endif
         if (!strcmp(option_name, "num-epochs")) {
             args->num_epochs = atoll(optarg);
 
         } else if (!strcmp(option_name, "alg-names")) {
             // FIXME split string, populate list, and store list length
-            args->alg_names[0] = optarg;
+            strcpy(args->alg_names, optarg);
 
         } else if (!strcmp(option_name, "input-path")) {
-            args->input_path = optarg;
+            strcpy(args->input_path, optarg);
 
         } else if (!strcmp(option_name, "batch-size")) {
             args->batch_size = atoll(optarg);
@@ -162,6 +194,10 @@ dynograph_args_parse(int argc, char *argv[], struct dynograph_args *args)
         print_help(argv[0]);
         dynograph_die();
     }
+
+#ifdef GETOPT_IS_BROKEN
+    fclose(arg_file);
+#endif
 }
 
 struct dynograph_dataset*
