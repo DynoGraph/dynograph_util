@@ -352,7 +352,7 @@ dynograph_load_dataset(const struct dynograph_args * args)
     int64_t max_vertex_id = 0;
     for (int64_t i = 0; i < dataset->num_edges; ++i)
     {
-        max_vertex_id = max3(max_vertex_id, dataset->edges[i].src, dataset->edges->dst);
+        max_vertex_id = max3(max_vertex_id, dataset->edges[i].src, dataset->edges[i].dst);
     }
     dataset->max_vertex_id = max_vertex_id;
 
