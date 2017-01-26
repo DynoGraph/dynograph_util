@@ -26,6 +26,12 @@ struct option {
 #endif
 
 void
+dynograph_die()
+{
+    exit(-1);
+}
+
+void
 dynograph_message(const char* fmt, ...)
 {
     va_list args;
@@ -45,7 +51,7 @@ dynograph_error(const char* fmt, ...)
     vfprintf(stderr, fmt, args);
     fprintf(stderr, "\n");
     va_end(args);
-    exit(1);
+    dynograph_die();
 }
 
 static const struct option long_options[] = {
@@ -137,7 +143,7 @@ dynograph_args_parse(int argc, char *argv[], struct dynograph_args *args)
     char optarg[256];
     while (fscanf(arg_file, "%s %s", &option_name, &optarg) == 2)
     {
-
+        dynograph_message("Parsed option %s with value %s\n", option_name, optarg);
 #else
     int option_index;
     while (1)
@@ -226,7 +232,7 @@ count_edges(const char* path)
 }
 
 struct dynograph_dataset*
-dynograph_load_edges_binary(const char* path, int64_t num_batches)
+dynograph_load_edges_binary(const char* path)
 {
     dynograph_message("Checking file size of %s...", path);
     FILE* fp = fopen(path, "rb");
@@ -245,7 +251,6 @@ dynograph_load_edges_binary(const char* path, int64_t num_batches)
         dynograph_error("Failed to allocate memory for %ld edges", num_edges);
     }
     dataset->num_edges = num_edges;
-    dataset->num_batches = num_batches;
     dataset->directed = true; // FIXME detect this somehow
 
     dynograph_message("Preloading %ld %s edges from %s...", num_edges, dataset->directed ? "directed" : "undirected", path);
@@ -281,7 +286,7 @@ dynograph_count_lines(const char* path)
 }
 
 struct dynograph_dataset*
-dynograph_load_edges_ascii(const char* path, int64_t num_batches)
+dynograph_load_edges_ascii(const char* path)
 {
     dynograph_message("Counting lines in %s...", path);
     int64_t num_edges = dynograph_count_lines(path);
@@ -295,7 +300,6 @@ dynograph_load_edges_ascii(const char* path, int64_t num_batches)
         dynograph_error("Failed to allocate memory for %ld edges", num_edges);
     }
     dataset->num_edges = num_edges;
-    dataset->num_batches = num_batches;
     dataset->directed = true; // FIXME detect this somehow
 
     dynograph_message("Preloading %ld %s edges from %s...", num_edges, dataset->directed ? "directed" : "undirected", path);
@@ -319,23 +323,40 @@ dynograph_file_is_binary(const char* path)
     return !strcmp(path + path_len - suffix_len, suffix);
 }
 
-struct dynograph_dataset*
-dynograph_load_dataset(const char* path, int64_t num_batches)
+static int64_t max3(int64_t a, int64_t b, int64_t c)
 {
-    // Sanity check
-    if (num_batches < 1)
-    {
-        dynograph_error("Need at least one batch");
-    }
-
-    if (dynograph_file_is_binary(path))
-    {
-        return dynograph_load_edges_binary(path, num_batches);
+    if (a > b){
+        if (a > c) { return a; }
+        else { return c; }
     } else {
-        return dynograph_load_edges_ascii(path, num_batches);
+        if (b > c) { return b; }
+        else { return c; }
     }
-    // FIXME calc max vertex id in file
+}
 
+struct dynograph_dataset*
+dynograph_load_dataset(const struct dynograph_args * args)
+{
+    struct dynograph_dataset * dataset;
+    if (dynograph_file_is_binary(args->input_path))
+    {
+        dataset = dynograph_load_edges_binary(args->input_path);
+    } else {
+        dataset = dynograph_load_edges_ascii(args->input_path);
+    }
+
+    dataset->args = args;
+    dataset->num_batches = dataset->num_edges / dataset->args->batch_size;
+
+    // FIXME make parallel or load from file
+    int64_t max_vertex_id = 0;
+    for (int64_t i = 0; i < dataset->num_edges; ++i)
+    {
+        max_vertex_id = max3(max_vertex_id, dataset->edges[i].src, dataset->edges->dst);
+    }
+    dataset->max_vertex_id = max_vertex_id;
+
+    return dataset;
 }
 
 int64_t
@@ -350,11 +371,12 @@ dynograph_get_batch(const struct dynograph_dataset* dataset, int64_t batch_id)
 {
     if (batch_id >= dataset->num_batches)
     {
-        dynograph_error("Batch %i does not exist!", batch_id);
+        dynograph_message("Batch %i does not exist!", batch_id);
+        dynograph_die();
     }
     // Intentionally rounding down here
     // TODO variable number of edges per batch
-    int64_t edges_per_batch = dataset->num_edges / dataset->num_batches;
+    int64_t edges_per_batch = dataset->args->batch_size;
     size_t offset = batch_id * edges_per_batch;
 
     struct dynograph_edge_batch batch = {
@@ -369,10 +391,4 @@ void
 dynograph_free_dataset(struct dynograph_dataset * dataset)
 {
     free(dataset);
-}
-
-void
-dynograph_die()
-{
-    exit(-1);
 }

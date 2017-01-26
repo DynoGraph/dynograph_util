@@ -8,11 +8,11 @@ struct dynograph_args
     // Number of epochs in the benchmark
     int64_t num_epochs;
     // File path for edge list to load
-    const char input_path[256];
+    char input_path[256];
     // Number of edges to insert in each batch of insertions
     int64_t batch_size;
     // Algorithms to run after each epoch
-    const char alg_names[256];
+    char alg_names[256];
     // Batch sort mode:
     enum SORT_MODE {
         // Do not pre-sort batches
@@ -57,7 +57,7 @@ void dynograph_die();
 void dynograph_args_parse(int argc, char *argv[], struct dynograph_args *args);
 
 
-struct dynograph_dataset * dynograph_load_dataset(const char* path, int64_t num_batches);
+struct dynograph_dataset * dynograph_load_dataset(const struct dynograph_args *args);
 struct dynograph_edge_batch dynograph_get_batch(const struct dynograph_dataset * dataset, int64_t batch_id);
 void dynograph_free_dataset(struct dynograph_dataset * dataset);
 int64_t dynograph_get_timestamp_for_window(const struct dynograph_dataset * dataset, int64_t batch_id);
