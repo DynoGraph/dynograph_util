@@ -7,8 +7,8 @@
 // Known bug in emu toolchain - can't use getopt/getopt_long
 #define GETOPT_IS_BROKEN
 #ifdef GETOPT_IS_BROKEN
-const int required_argument = 0;
-const int no_argument = 1;
+#define required_argument 0
+#define no_argument 1
 struct option {
     const char *name;
     int         has_arg;
