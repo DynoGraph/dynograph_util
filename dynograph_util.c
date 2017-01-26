@@ -334,6 +334,11 @@ static int64_t max3(int64_t a, int64_t b, int64_t c)
     }
 }
 
+static int64_t max2(int64_t a, int64_t b)
+{
+    return a > b ? a : b;
+}
+
 struct dynograph_dataset*
 dynograph_load_dataset(const struct dynograph_args * args)
 {
@@ -359,11 +364,38 @@ dynograph_load_dataset(const struct dynograph_args * args)
     return dataset;
 }
 
-int64_t
-dynograph_get_timestamp_for_window(const struct dynograph_dataset *dataset, int64_t batch_id)
+// Round down to nearest integer
+static int64_t
+round_down(double x)
 {
-    // FIXME
-    return 0;
+    return (int64_t)x;
+}
+
+int64_t
+dynograph_get_timestamp_for_window(const struct dynograph_dataset *dataset, const struct dynograph_edge_batch *batch)
+{
+    // Calculate width of timestamp window
+    int64_t min_timestamp = dataset->edges[0].timestamp;
+    int64_t max_timestamp = dataset->edges[dataset->num_edges-1].timestamp;
+    int64_t window_time = round_down(dataset->args->window_size * (max_timestamp - min_timestamp));
+    // Get the timestamp of the last edge in the current batch
+    int64_t latest_time = batch->edges[batch->num_edges-1].timestamp;
+
+    return max2(min_timestamp, latest_time - window_time);
+}
+
+#define true_div(X,Y) ((double)X / (double)Y)
+
+bool
+dynograph_enable_algs_for_batch(const struct dynograph_dataset *dataset, int64_t batch_id) {
+    // How many batches in each epoch, on average?
+    double batches_per_epoch = true_div(dataset->num_batches, dataset->args->num_epochs);
+    // How many algs run before this batch?
+    int64_t batches_before = round_down(true_div(batch_id, batches_per_epoch));
+    // How many algs should run after this batch?
+    int64_t batches_after = round_down(true_div((batch_id + 1), batches_per_epoch));
+    // If the count changes between this batch and the next, we should run an alg now
+    return (batches_after - batches_before) > 0;
 }
 
 struct dynograph_edge_batch

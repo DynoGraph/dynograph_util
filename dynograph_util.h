@@ -60,6 +60,8 @@ void dynograph_args_parse(int argc, char *argv[], struct dynograph_args *args);
 struct dynograph_dataset * dynograph_load_dataset(const struct dynograph_args *args);
 struct dynograph_edge_batch dynograph_get_batch(const struct dynograph_dataset * dataset, int64_t batch_id);
 void dynograph_free_dataset(struct dynograph_dataset * dataset);
-int64_t dynograph_get_timestamp_for_window(const struct dynograph_dataset * dataset, int64_t batch_id);
+int64_t dynograph_get_timestamp_for_window(const struct dynograph_dataset * dataset, const struct dynograph_edge_batch *batch);
+bool dynograph_enable_algs_for_batch(const struct dynograph_dataset *dataset, int64_t batch_id);
+
 
 #endif /* __DYNOGRAPH_H_ */
