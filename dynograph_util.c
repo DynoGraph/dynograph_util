@@ -143,7 +143,6 @@ dynograph_args_parse(int argc, char *argv[], struct dynograph_args *args)
     char optarg[256];
     while (fscanf(arg_file, "%s %s", &option_name, &optarg) == 2)
     {
-        dynograph_message("Parsed option %s with value %s\n", option_name, optarg);
 #else
     int option_index;
     while (1)
