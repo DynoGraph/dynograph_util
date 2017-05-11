@@ -96,6 +96,13 @@ get_preprocessed_batch(int64_t batchId, IDataset &dataset, Args::SORT_MODE sort_
 bool
 enable_algs_for_batch(int64_t batch_id, int64_t num_batches, int64_t num_epochs);
 
+std::vector<int64_t>
+load_sources_from_file(std::string path);
+
+// Terminate the benchmark in the event of an error
+void
+die();
+
 template<typename graph_t>
 void
 run(int argc, char **argv)
@@ -112,6 +119,19 @@ run(int argc, char **argv)
     DynoGraph::Logger &logger = DynoGraph::Logger::get_instance();
     Hooks& hooks = Hooks::getInstance();
     typedef DynoGraph::Args::SORT_MODE SORT_MODE;
+    // Load source vertices, if specified
+    std::vector<int64_t> sources;
+    if (!args.sources_path.empty()) {
+        sources = load_sources_from_file(args.sources_path);
+        for (auto source : sources) {
+            if (source > max_vertex_id) {
+                logger << "Error: Vertex " << source << " from " << args.sources_path
+                       << " cannot be used as a source vertex because this dataset only has "
+                       << max_vertex_id + 1 << " vertices.\n";
+                die();
+            }
+        }
+    }
 
     for (int64_t trial = 0; trial < args.num_trials; trial++)
     {
@@ -197,14 +217,16 @@ run(int argc, char **argv)
                     // Run each alg
                     for (std::string alg_name : args.alg_names)
                     {
-                        // Pick source vertex(s)
-                        int64_t num_sources;
-                        if (alg_name == "bfs" || alg_name == "sssp") { num_sources = 1; }
-                        else if (alg_name == "bc") { num_sources = 128; }
-                        else { num_sources = 0; }
-                        std::vector<int64_t> sources = graph.get_high_degree_vertices(num_sources);
-                        if (sources.size() == 1) {
-                            hooks.set_stat("source_vertex", sources[0]);
+                        if (args.sources_path.empty()) {
+                            // Pick source vertex(s)
+                            int64_t num_sources;
+                            if (alg_name == "bfs" || alg_name == "sssp") { num_sources = 1; }
+                            else if (alg_name == "bc") { num_sources = 128; }
+                            else { num_sources = 0; }
+                            sources = graph.get_high_degree_vertices(num_sources);
+                            if (sources.size() == 1) {
+                                hooks.set_stat("source_vertex", sources[0]);
+                            }
                         }
 
                         logger << "Running " << alg_name << " for epoch " << epoch << "\n";
@@ -227,9 +249,6 @@ run(int argc, char **argv)
         dataset->reset();
     }
 }
-
-// Terminate the benchmark in the event of an error
-void die();
 
 }; // end namespace DynoGraph
 

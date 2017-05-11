@@ -6,6 +6,8 @@
 #include "edgelist_dataset.h"
 #include <gtest/gtest.h>
 #include "pvector.h"
+#include <fstream>
+#include <iostream>
 
 using namespace DynoGraph;
 
@@ -13,6 +15,24 @@ using namespace DynoGraph;
 TEST(DynoGraphUtilTests, ArgValidationFail) {
     Args args;
     EXPECT_NE(args.validate(), "");
+}
+
+// Make sure we can load sources from disk
+TEST(DynoGraphUtilTests, LoadSources) {
+    // Create temp file with sources
+    std::string temp_filename = "test_sources.txt";
+    std::vector<int64_t> test_sources = {3, 6, 9, 12};
+    std::ofstream temp_file(temp_filename);
+    for (long long int i : test_sources) {
+        temp_file << i << "\n";
+    }
+    temp_file.close();
+    // Load from file
+    auto loaded_sources = DynoGraph::load_sources_from_file(temp_filename);
+    // Check that sources were loaded correctly
+    EXPECT_EQ(test_sources, loaded_sources);
+    // Clean up
+    remove(temp_filename.c_str());
 }
 
 class DatasetTest: public ::testing::TestWithParam<Args> {

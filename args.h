@@ -32,6 +32,8 @@ struct Args
     int64_t num_trials;
     // Number of times to repeat each epoch
     int64_t num_alg_trials;
+    // File path to the list of source vertices to use for graph algorithms
+    std::string sources_path;
 
     Args() = default;
     std::string validate() const;

@@ -19,6 +19,7 @@ static const option long_options[] = {
     {"window-size", required_argument, 0, 0},
     {"num-trials" , required_argument, 0, 0},
     {"num-alg-trials", required_argument, 0, 0},
+    {"sources-path", required_argument, 0, 0},
     {"help"       , no_argument, 0, 0},
     {NULL         , 0, 0, 0}
 };
@@ -35,6 +36,7 @@ static const std::pair<string, string> option_descriptions[] = {
     {"window-size", "Percentage of the graph to hold in memory (computed using timestamps) "},
     {"num-trials" , "Number of times to repeat the benchmark"},
     {"num-alg-trials" , "Number of times to repeat algorithms in each epoch"},
+    {"sources-path" , "File path to the list of source vertices to use for graph algorithms"},
     {"help"       , "Print help"},
 };
 
@@ -61,6 +63,7 @@ Args::parse(int argc, char *argv[])
     args.window_size = 1.0;
     args.num_trials = 1;
     args.num_alg_trials = 1;
+    args.sources_path = "";
 
     int option_index;
     while (1)
@@ -108,6 +111,9 @@ Args::parse(int argc, char *argv[])
 
         } else if (option_name == "num-alg-trials") {
             args.num_alg_trials = static_cast<int64_t>(std::stoll(optarg));
+
+        } else if (option_name == "sources-path") {
+            args.sources_path = optarg;
 
         } else if (option_name == "help") {
             print_help(argv[0]);
@@ -173,6 +179,7 @@ DynoGraph::operator <<(std::ostream& os, const Args& args)
         << "\"window_size\":" << args.window_size << ","
         << "\"num_trials\":"  << args.num_trials << ","
         << "\"num_alg_trials\":"  << args.num_alg_trials << ","
+        << "\"sources_path\":" << args.sources_path << ","
         << "\"sort_mode\":\""   << args.sort_mode << "\",";
 
     os << "\"alg_names\":[";

@@ -108,6 +108,27 @@ DynoGraph::enable_algs_for_batch(int64_t batch_id, int64_t num_batches, int64_t 
     return enable;
 }
 
+std::vector<int64_t>
+DynoGraph::load_sources_from_file(std::string path)
+{
+    vector<int64_t> sources;
+    MPI_RANK_0_ONLY {
+        // Open the file
+        FILE* source_file = fopen(path.c_str(), "r");
+        if (source_file == NULL) {
+            Logger::get_instance() << "Unable to open sources file: " << path << "\n";
+            die();
+        }
+        // Read a source vertex from one line at a time
+        long long int source;
+        while (fscanf(source_file, "%lli\n", &source) == 1) {
+            sources.push_back(static_cast<int64_t>(source));
+        }
+    }
+    MPI_BROADCAST_RESULT(sources);
+    return sources;
+};
+
 void
 DynoGraph::die()
 {
