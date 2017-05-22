@@ -47,4 +47,11 @@ public:
     }
 };
 
+// Terminate the benchmark in the event of an error
+inline void
+die()
+{
+    exit(-1);
+}
+
 } // end namespace DynoGraph

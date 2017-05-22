@@ -1,3 +1,4 @@
+#include "logger.h"
 #include "rmat_dataset.h"
 #include <iostream>
 #include <stdio.h>

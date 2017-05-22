@@ -1,5 +1,6 @@
 #include "rmat_dataset.h"
 #include "helpers.h"
+#include "logger.h"
 
 using namespace DynoGraph;
 

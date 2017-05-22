@@ -1,7 +1,6 @@
 
 // Provides unit tests for the RmatDataset class
 
-#include "dynograph_util.h"
 #include "reference_impl.h"
 #include "rmat_dataset.h"
 #include <gtest/gtest.h>

@@ -1,4 +1,6 @@
-#include "dynograph_util.h"
+#include "edge.h"
+#include "logger.h"
+#include "pvector.h"
 
 using namespace DynoGraph;
 

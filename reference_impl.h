@@ -1,7 +1,7 @@
 #ifndef REFERENCE_IMPL_H
 #define REFERENCE_IMPL_H
 
-#include "dynograph_util.h"
+#include "dynamic_graph.h"
 #include <map>
 #include <inttypes.h>
 

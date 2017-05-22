@@ -28,10 +28,6 @@ struct edge_count_wrapper
 #include <omp.h>
 #endif
 
-#if defined(USE_MPI)
-#include "../mpi_macros.h"
-#endif
-
 #if defined(ENABLE_SNIPER_HOOKS)
 #include <hooks_base.h>
 #elif defined(ENABLE_GEM5_HOOKS)

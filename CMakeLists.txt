@@ -8,9 +8,9 @@ add_library(dynograph_util
     args.cc
     alg_data_manager.cc
     batch.cc
+    benchmark.cc
     edgelist_dataset.cc
     rmat_dataset.cc
-    dynograph_util.cc
 )
 # Enable parallel versions of functions from <algorithm> and <numeric>
 if (OPENMP_FOUND)

@@ -4,6 +4,7 @@
 
 #include "edgelist_dataset.h"
 #include "helpers.h"
+#include "logger.h"
 
 #include <stdio.h>
 #include <stdlib.h>

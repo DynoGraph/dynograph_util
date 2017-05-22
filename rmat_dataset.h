@@ -1,8 +1,9 @@
 #pragma once
 
-#include "dynograph_util.h"
+#include "args.h"
 #include "rmat.h"
-#include "pvector.h"
+#include "batch.h"
+#include "idataset.h"
 
 namespace DynoGraph {
 

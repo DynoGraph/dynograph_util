@@ -1,9 +1,9 @@
 
 // Provides unit tests for classes and functionality in dynograph_util
 
-#include "dynograph_util.h"
 #include "reference_impl.h"
 #include "edgelist_dataset.h"
+#include "benchmark.h"
 #include <gtest/gtest.h>
 #include "pvector.h"
 #include <fstream>
@@ -28,7 +28,7 @@ TEST(DynoGraphUtilTests, LoadSources) {
     }
     temp_file.close();
     // Load from file
-    auto loaded_sources = DynoGraph::load_sources_from_file(temp_filename);
+    auto loaded_sources = DynoGraph::load_sources_from_file(temp_filename, 12);
     // Check that sources were loaded correctly
     EXPECT_EQ(test_sources, loaded_sources);
     // Clean up

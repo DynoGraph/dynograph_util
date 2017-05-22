@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dynograph_util.h"
+#include "idataset.h"
 #include <memory>
 
 namespace DynoGraph {
