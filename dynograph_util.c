@@ -5,7 +5,7 @@
 #include <string.h>
 
 // Known bug in emu toolchain - can't use getopt/getopt_long
-#define GETOPT_IS_BROKEN
+//#define GETOPT_IS_BROKEN
 #ifdef GETOPT_IS_BROKEN
 #define required_argument 0
 #define no_argument 1
