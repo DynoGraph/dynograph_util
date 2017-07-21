@@ -2,6 +2,9 @@
 #include "helpers.h"
 #include "rmat_dataset.h"
 #include "edgelist_dataset.h"
+#ifdef USE_MPI
+#include "proxy_dataset.h"
+#endif
 
 using namespace DynoGraph;
 //using std::cerr;

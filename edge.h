@@ -28,8 +28,5 @@ operator<<(std::ostream &os, const Edge &e) {
     return os;
 }
 
-#ifdef USE_MPI
-BOOST_IS_BITWISE_SERIALIZABLE(DynoGraph::Edge)
-#endif
 
 } // end namespace DynoGraph

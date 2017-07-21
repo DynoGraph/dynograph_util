@@ -60,8 +60,4 @@ operator < (const vertex_degree &a, const vertex_degree &b) {
     return a.vertex_id > b.vertex_id;
 }
 
-#ifdef USE_MPI
-BOOST_IS_BITWISE_SERIALIZABLE(DynoGraph::vertex_degree);
-#endif
-
 } // end namespace DynoGraph
