@@ -11,6 +11,7 @@ add_library(dynograph_util
     benchmark.cc
     edgelist_dataset.cc
     rmat_dataset.cc
+    proxy_dataset.cc
 )
 # Enable parallel versions of functions from <algorithm> and <numeric>
 if (OPENMP_FOUND)

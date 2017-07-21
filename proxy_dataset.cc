@@ -90,6 +90,7 @@ ProxyDataset::getMaxTimestamp() const {
     return retval;
 }
 
+void
 ProxyDataset::reset() {
     MPI_RANK_0_ONLY { impl->reset(); }
     MPI_BARRIER();
