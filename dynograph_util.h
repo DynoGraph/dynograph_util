@@ -45,9 +45,9 @@ struct dynograph_dataset {
 };
 
 struct dynograph_edge_batch {
-    const int64_t num_edges;
-    const int64_t directed;
-    const struct dynograph_edge* edges;
+    int64_t num_edges;
+    int64_t directed;
+    struct dynograph_edge* edges;
 };
 
 void dynograph_message(const char* fmt, ...);
