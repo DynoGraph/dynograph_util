@@ -26,6 +26,8 @@ struct dynograph_args
     double window_size;
     // Number of times to repeat the benchmark
     int64_t num_trials;
+    // Number of times to repeat each algorithm in each epoch
+    int64_t num_alg_trials;
 };
 
 struct dynograph_edge {

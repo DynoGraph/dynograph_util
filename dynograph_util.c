@@ -62,6 +62,7 @@ static const struct option long_options[] = {
     {"sort-mode"  , required_argument, 0, 0},
     {"window-size", required_argument, 0, 0},
     {"num-trials" , required_argument, 0, 0},
+    {"num-alg-trials", required_argument, 0, 0},
     {"help"       , no_argument, 0, 0},
     {NULL         , 0, 0, 0}
 };
@@ -81,6 +82,7 @@ static const struct option_desc
                     "\t\tsnapshot (clear out graph and reconstruct for each batch)"},
     {"window-size", "Percentage of the graph to hold in memory (computed using timestamps) "},
     {"num-trials" , "Number of times to repeat the benchmark"},
+    {"num-alg-trials" , "Number of times to repeat each algorithm in each epoch"},
     {"help"       , "Print help"},
     {NULL         , NULL}
 };
@@ -118,6 +120,11 @@ validate(const struct dynograph_args *args)
         dynograph_message("\t--num-trials must be positive");
         return false;
     }
+    if (args->num_alg_trials < 1) {
+        dynograph_message("\t--num-alg-trials must be positive");
+        return false;
+    }
+
     return true;
 }
 
@@ -190,6 +197,9 @@ dynograph_args_parse(int argc, char *argv[], struct dynograph_args *args)
 
         } else if (!strcmp(option_name, "num-trials")) {
             args->num_trials = atoll(optarg);
+
+        } else if (!strcmp(option_name, "num-alg-trials")) {
+            args->num_alg_trials = atoll(optarg);
 
         } else if (!strcmp(option_name, "help")) {
             print_help(argv[0]);
