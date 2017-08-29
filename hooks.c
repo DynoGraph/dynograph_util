@@ -1,18 +1,34 @@
 #include "hooks_c.h"
 #include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
 
 #ifdef __le64__
 #include <memoryweb.h>
 #endif
 
-int64_t hooks_timestamp;
+int64_t hooks_timestamp = 0;
+const char* hooks_active_region = NULL;
+
+void hooks_set_active_region(const char* name)
+{
+    hooks_active_region = name;
+}
+
+static bool region_is_active(const char* name)
+{
+    if (hooks_active_region == NULL) return true;
+    else { return (bool)!strcmp(name, hooks_active_region); }
+}
 
 void hooks_region_begin(const char* name)
 {
 
 #ifdef __le64__
     hooks_timestamp = -CLOCK();
-    starttiming();
+    if (region_is_active(name)) {
+        starttiming();
+    }
 #endif
 }
 void hooks_region_end()
