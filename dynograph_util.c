@@ -134,6 +134,7 @@ dynograph_args_parse(int argc, char *argv[], struct dynograph_args *args)
     args->sort_mode = UNSORTED;
     args->window_size = 1.0;
     args->num_trials = 1;
+    args->num_alg_trials = 1;
 
 #ifdef GETOPT_IS_BROKEN
     if (argc != 2) {
