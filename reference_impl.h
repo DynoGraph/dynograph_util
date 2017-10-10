@@ -2,7 +2,7 @@
 #define REFERENCE_IMPL_H
 
 #include "dynamic_graph.h"
-#include <map>
+#include <unordered_map>
 #include <cinttypes>
 
 /**
@@ -17,8 +17,8 @@ protected:
         edge_prop() : weight(-1), timestamp(-1) {};
         edge_prop(int64_t weight, int64_t timestamp) : weight(weight), timestamp(timestamp) {};
     };
-    typedef std::map<int64_t, edge_prop> edge_list;
-    typedef std::map<int64_t, edge_list> adjacency_list;
+    typedef std::unordered_map<int64_t, edge_prop> edge_list;
+    typedef std::unordered_map<int64_t, edge_list> adjacency_list;
     adjacency_list graph;
     int64_t num_edges;
 
