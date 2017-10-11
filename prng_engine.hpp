@@ -220,7 +220,7 @@ public:
     void discard(uint64_t z)
     {
         // check if we stay in the current block
-        if (z < 8 - _o_counter) {
+        if (z < 8U - _o_counter) {
             _o_counter += static_cast<unsigned short>(z);
             return;
         }
