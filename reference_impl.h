@@ -119,14 +119,14 @@ public:
         for (const std::pair<const int64_t, edge_list>& vertex : graph)
         {
             int64_t source = vertex.first;
+            std::cerr << source << " -> ";
             const edge_list& neighbors = vertex.second;
             for (edge_list::const_iterator neighbor = neighbors.begin(); neighbor != neighbors.end(); ++neighbor)
             {
                 int64_t dest = neighbor->first;
-                int64_t weight = neighbor->second.weight;
-                int64_t timestamp = neighbor->second.timestamp;
-                std::cerr << source << " " << dest << " " << weight << " " << timestamp << "\n";
+                std::cerr << dest << ",";
             }
+            std::cerr << "\n";
         }
     }
 };
