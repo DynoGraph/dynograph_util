@@ -5,13 +5,13 @@ add_subdirectory(hooks)
 
 # Build the dynograph_util library
 add_library(dynograph_util
-    args.cc
-    alg_data_manager.cc
-    batch.cc
-    benchmark.cc
-    edgelist_dataset.cc
-    rmat_dataset.cc
-    proxy_dataset.cc
+    args.cc args.h
+    alg_data_manager.cc alg_data_manager.h
+    batch.cc batch.h
+    benchmark.cc benchmark.h
+    edgelist_dataset.cc edgelist_dataset.h
+    rmat_dataset.cc rmat_dataset.h
+    proxy_dataset.cc proxy_dataset.h
 )
 # Enable parallel versions of functions from <algorithm> and <numeric>
 if (OPENMP_FOUND)
