@@ -71,7 +71,7 @@ Batch::dedup_and_sort_by_out_degree()
     // Allocate an array with an entry for each vertex
     pvector<int64_t> degrees(this->max_vertex_id()+1);
     #pragma omp parallel for
-    for (int64_t i = 0; i < degrees.size(); ++i) {
+    for (size_t i = 0; i < degrees.size(); ++i) {
         degrees[i] = i;
     }
 
@@ -81,7 +81,7 @@ Batch::dedup_and_sort_by_out_degree()
     for (size_t src = 0; src < degrees.size(); ++src)
     {
         // Find the range of edges with src==src
-        Edge key = {src, 0, 0, 0};
+        Edge key = {static_cast<int64_t>(src), 0, 0, 0};
         auto range = std::equal_range(pos, end_iter, key,
             [](const Edge& a, const Edge& b) {
                 return a.src < b.src;

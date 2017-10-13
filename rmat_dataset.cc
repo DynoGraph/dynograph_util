@@ -66,7 +66,7 @@ RmatDataset::RmatDataset(Args args, RmatArgs rmat_args)
     Logger &logger = Logger::get_instance();
 
     // Sanity check on arguments
-    if (static_cast<size_t>(args.batch_size) > num_edges)
+    if (args.batch_size > num_edges)
     {
         logger << "Invalid arguments: batch size (" << args.batch_size << ") "
                << "cannot be larger than the total number of edges in the dataset "
