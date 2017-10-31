@@ -12,6 +12,7 @@ class EdgeListDataset : public IDataset
 private:
     void loadEdgesBinary(std::string path);
     void loadEdgesAscii(std::string path);
+    void loadEdgesCompressed(std::string path);
 
     Args args;
     bool directed;

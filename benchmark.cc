@@ -50,14 +50,8 @@ DynoGraph::create_dataset(const Args &args)
         }
         dataset = make_shared<RmatDataset>(args, rmat_args);
 
-    } else if (has_suffix(args.input_path, ".graph.bin")
-    || has_suffix(args.input_path, ".graph.el"))
-    {
-        dataset = make_shared<EdgeListDataset>(args);
-
     } else {
-        logger << "Unrecognized file extension for " << args.input_path << "\n";
-        die();
+        dataset = make_shared<EdgeListDataset>(args);
     }
     }
     MPI_BARRIER();

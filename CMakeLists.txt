@@ -17,7 +17,7 @@ add_library(dynograph_util
 if (OPENMP_FOUND)
   target_compile_definitions(dynograph_util PUBLIC _GLIBCXX_PARALLEL)
 endif()
-target_link_libraries(dynograph_util hooks)
+target_link_libraries(dynograph_util hooks z)
 target_include_directories(dynograph_util PUBLIC hooks)
 
 # Build the RMAT graph dumper

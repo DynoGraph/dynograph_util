@@ -25,6 +25,8 @@ EdgeListDataset::EdgeListDataset(Args args)
         loadEdgesBinary(args.input_path);
     } else if (has_suffix(args.input_path, ".graph.el")) {
         loadEdgesAscii(args.input_path);
+    } else if (has_suffix(args.input_path, ".graph.bin.gz")) {
+        loadEdgesCompressed(args.input_path);
     } else {
         logger << "Unrecognized file extension for " << args.input_path << "\n";
         die();
@@ -156,6 +158,59 @@ EdgeListDataset::loadEdgesAscii(string path)
         rc = fscanf(fp, "%ld %ld %ld %ld\n", &e->src, &e->dst, &e->weight, &e->timestamp);
     }
     fclose(fp);
+}
+
+#include <zlib.h>
+void
+EdgeListDataset::loadEdgesCompressed(string path)
+{
+    Logger &logger = Logger::get_instance();
+
+    string directedStr = directed ? "directed" : "undirected";
+    logger << "Preloading " << directedStr << " edges from " << path << "...\n";
+
+    struct stat st;
+    if (stat(path.c_str(), &st) != 0) {
+        logger << "Failed to stat " << path << "\n";
+        die();
+    } else {
+        // We don't know how many edges are in the file, but we can start with the compressed size as a hint
+        edges.reserve(st.st_size / sizeof(Edge));
+    }
+    // Open compressed file
+    gzFile fp = gzopen(path.c_str(), "rb");
+
+    size_t pos = 0;
+    int rc = 0;
+    unsigned int chunk_size = 64 * 1024 * 1024; // 64MB
+    edges.resize(chunk_size);
+    do {
+        // Update total number of bytes read
+        pos += rc;
+        // Resize array to hold another full chunk
+        size_t new_size = (pos + chunk_size + sizeof(Edge)) / sizeof(Edge);
+        while (new_size > edges.size()) { edges.resize(edges.size() * 2); }
+        // Read up to one full chunk from the array
+        rc = gzread(fp, reinterpret_cast<unsigned char*>(edges.data()) + pos, chunk_size);
+    } while (rc > 0);
+
+    // Check for error
+    if (rc < 0) {
+        logger << "Failed to load graph from " << path << "\n";
+        logger << gzerror(fp, nullptr) << "\n";
+        die();
+    } else if (pos % sizeof(Edge) != 0) {
+        logger << "Failed to load graph from " << path << "\n";
+        logger << "File is corrupt" << "\n";
+        die();
+    }
+
+    // Resize array to actual size
+    size_t numEdges = pos / sizeof(Edge);
+    edges.resize(numEdges);
+    logger << "Loaded " << numEdges << " edges\n";
+
+    gzclose(fp);
 }
 
 int64_t
