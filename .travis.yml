@@ -3,7 +3,7 @@ language: cpp
 compiler:
   - gcc
 install:
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
 before_script:
   - mkdir build
   - cd build
@@ -19,6 +19,6 @@ addons:
     packages:
       - cmake
       - cmake-data
-      - gcc-4.8
-      - g++-4.8
+      - gcc-5
+      - g++-5
 
