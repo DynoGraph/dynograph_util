@@ -78,7 +78,7 @@ Batch::dedup_and_sort_by_out_degree()
     // Count the degree of each vertex
     auto pos = begin_iter;
     #pragma omp parallel for schedule(static) firstprivate(pos)
-    for (size_t src = 0; src < degrees.size(); ++src)
+    for (int64_t src = 0; src < degrees.size(); ++src)
     {
         // Find the range of edges with src==src
         Edge key = {static_cast<int64_t>(src), 0, 0, 0};
